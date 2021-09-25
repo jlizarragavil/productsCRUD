@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +29,7 @@ public class ProductController {
 	@Autowired
 	ProductRepository productRepository;
 
-	@GetMapping({ "/product", "/product/{owner}" })
+	@GetMapping({ "/products", "/products/{owner}" })
 	public ResponseEntity<List<Product>> getAllProducts(@PathVariable(required = false) String owner) {
 		try {
 			List<Product> products = new ArrayList<Product>();
@@ -48,7 +49,7 @@ public class ProductController {
 		}
 	}
 
-	@GetMapping("/products/{id}")
+	@GetMapping("/product/{id}")
 	public ResponseEntity<Product> getProductById(@PathVariable("id") long id) {
 		Optional<Product> productData = productRepository.findById(id);
 		if (productData.isPresent()) {
@@ -58,7 +59,7 @@ public class ProductController {
 		}
 	}
 
-	@PostMapping("/products")
+	@PostMapping("/product")
 	public ResponseEntity<Product> createProduct(@RequestBody Product product) {
 		try {
 			Product _product = productRepository
@@ -70,7 +71,7 @@ public class ProductController {
 		}
 	}
 
-	@PutMapping("/products/{id}")
+	@PutMapping("/product/{id}")
 	public ResponseEntity<Product> updateProduct(@PathVariable("id") long id, @RequestBody Product product) {
 		Optional<Product> productData = productRepository.findById(id);
 		if (productData.isPresent()) {
@@ -85,5 +86,22 @@ public class ProductController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
-	
+	@DeleteMapping("/product/{id}")
+	public ResponseEntity<Product> deleteProduct(@PathVariable("id") long id){
+			try {
+				productRepository.deleteById(id);
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			}catch(Exception e) {
+				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+	}
+	@DeleteMapping("/product")
+	public ResponseEntity<Product> deleteAllProducts(){
+			try {
+				productRepository.deleteAll();
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			}catch(Exception e) {
+				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+	}
 }
