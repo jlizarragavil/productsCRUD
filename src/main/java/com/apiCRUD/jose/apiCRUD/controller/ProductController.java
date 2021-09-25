@@ -66,23 +66,24 @@ public class ProductController {
 			return new ResponseEntity<>(_product, HttpStatus.OK);
 		} catch (Exception e) {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-			
+
+		}
+	}
+
+	@PutMapping("/products/{id}")
+	public ResponseEntity<Product> updateProduct(@PathVariable("id") long id, @RequestBody Product product) {
+		Optional<Product> productData = productRepository.findById(id);
+		if (productData.isPresent()) {
+			Product updatedProduct = productData.get();
+			updatedProduct.setName(product.getName());
+			updatedProduct.setOwner(product.getOwner());
+			updatedProduct.setPrice(product.getPrice());
+
+			return new ResponseEntity<>(productRepository.save(updatedProduct), HttpStatus.OK);
+
+		} else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 	}
 	
-	@PutMapping("/products/{id}")
-	public ResponseEntity <Product> updateProduct(@PathVariable("id") long id, @RequestBody Product product){
-		 	Optional <Product> productData = productRepository.findById(id);
-		 	if(productData.isPresent()) {
-		 		Product updatedProduct = productData.get();
-		 		updatedProduct.setName(product.getName());
-		 		updatedProduct.setOwner(product.getOwner());
-		 		updatedProduct.setPrice(product.getPrice());
-		 		
-		 		return new ResponseEntity<>(productRepository.save(updatedProduct), HttpStatus.OK);
-
-		 	}else {
-		 		 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		 	}
-	}
 }
