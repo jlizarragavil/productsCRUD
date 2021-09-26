@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.apiCRUD.jose.apiCRUD.exception.ResourceNotFoundException;
 import com.apiCRUD.jose.apiCRUD.model.Product;
 import com.apiCRUD.jose.apiCRUD.repository.ProductRepository;
 
@@ -31,7 +32,7 @@ public class ProductController {
 
 	@GetMapping({ "/products", "/products/{owner}" })
 	public ResponseEntity<List<Product>> getAllProducts(@PathVariable(required = false) String owner) {
-		try {
+		
 			List<Product> products = new ArrayList<Product>();
 
 			if (owner == null) {
@@ -43,20 +44,15 @@ public class ProductController {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
 			return new ResponseEntity<>(products, HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-
-		}
+		
 	}
 
 	@GetMapping("/product/{id}")
 	public ResponseEntity<Product> getProductById(@PathVariable("id") long id) {
-		Optional<Product> productData = productRepository.findById(id);
-		if (productData.isPresent()) {
-			return new ResponseEntity<>(productData.get(), HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
+		Product productData = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Not found Product with id = " + id));
+		
+			return new ResponseEntity<>(productData, HttpStatus.OK);
+	
 	}
 
 	@PostMapping("/product")
@@ -64,7 +60,7 @@ public class ProductController {
 		try {
 			Product _product = productRepository
 					.save(new Product(product.getId(), product.getName(), product.getOwner(), product.getPrice()));
-			return new ResponseEntity<>(_product, HttpStatus.OK);
+			return new ResponseEntity<>(_product, HttpStatus.CREATED);
 		} catch (Exception e) {
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 
@@ -73,18 +69,13 @@ public class ProductController {
 
 	@PutMapping("/product/{id}")
 	public ResponseEntity<Product> updateProduct(@PathVariable("id") long id, @RequestBody Product product) {
-		Optional<Product> productData = productRepository.findById(id);
-		if (productData.isPresent()) {
-			Product updatedProduct = productData.get();
+		Product productData = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Not found Product with id = " + id));
+			Product updatedProduct = productData;
 			updatedProduct.setName(product.getName());
 			updatedProduct.setOwner(product.getOwner());
 			updatedProduct.setPrice(product.getPrice());
 
 			return new ResponseEntity<>(productRepository.save(updatedProduct), HttpStatus.OK);
-
-		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
 	}
 	@DeleteMapping("/product/{id}")
 	public ResponseEntity<Product> deleteProduct(@PathVariable("id") long id){
